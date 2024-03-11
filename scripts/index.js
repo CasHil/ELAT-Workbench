@@ -134,6 +134,7 @@ function prepareLogFiles(fileIndex){
         console.log('File', fileIndex + 1, 'out of', totalFiles, '-----------------------------');
         let counter = 0;
         for (const f of files) {
+            console.log('File', counter + 1, 'out of', totalFiles);
             if (counter === fileIndex) {
                 const today = new Date();
                 console.log('Starting at', today);
@@ -198,6 +199,7 @@ function unzipAndChunkLogfile(file, reader, fileIndex, totalFiles, callback){
                 });
                 let i = 0;
                 for (; i < buffer.length - chunkSize; i += chunkSize) {
+                    console.log('Chunk', chunkIndex, 'out of', totalChunks);
                     stream.push(buffer.slice(i, i + chunkSize));
                 }
                 stream.push(buffer.slice(i), true);
@@ -206,6 +208,7 @@ function unzipAndChunkLogfile(file, reader, fileIndex, totalFiles, callback){
                     console.log(error);
                     loader(false);
                 } else {
+                    console.error(error);
                     toastr.error('There was an error unzipping the file, please try again');
                     toastr.info('If this happens again, restart Chrome and close all other tabs');
                     loader(false);

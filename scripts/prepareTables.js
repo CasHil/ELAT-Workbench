@@ -301,38 +301,45 @@ function showMainIndicatorsTable(connection) {
                         query = "COUNT * from course_learner WHERE certificate_status = 'downloadable' ";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
+                            console.log(result)
                             completed = result;
                         });
                         query = "COUNT * from learner_demographic";
                         if (segment !== 'none') {query += " WHERE segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
+                            console.log(result)
                             completionRate = completed / result;
                         });
-                        query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
+                        query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable'";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
+                            console.log(result)
                             avgGrade = result[0]['avg(final_grade)'] * 100;
                         });
                         query = "COUNT * from course_learner WHERE enrollment_mode = 'verified' ";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
+                            console.log(result)
                             verifiedLearners = result;
                         });
                         query = "COUNT * from course_learner WHERE enrollment_mode = 'honor' ";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
+                            console.log(result)
                             honorLearners = result;
                         });
                         query = "COUNT * from course_learner WHERE enrollment_mode = 'audit' ";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         await connection.runSql(query).then(function (result) {
                             auditLearners = result;
+                            console.log(result)
                         });
                         query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
                         if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                         query += "GROUP BY enrollment_mode";
                         await connection.runSql(query).then(function (results) {
                             results.forEach(function (result) {
+                                console.log(result)
                                 avgGrades[result.enrollment_mode] = (result['avg(final_grade)'] * 100).toFixed(1);
                             });
                         });
@@ -340,6 +347,7 @@ function showMainIndicatorsTable(connection) {
                         await connection.runSql(query).then(function (watchers) {
                             videoDuration = 0;
                             videoWatchers = 0;
+                            console.log(watchers)
                             watchers.forEach(function (watcher) {
                             if (segment === 'none' || learnerSegmentation(watcher['course_learner_id'], segmentation) === segment) {
                                 videoDuration += watcher['sum(duration)'];

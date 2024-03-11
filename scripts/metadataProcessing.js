@@ -38,9 +38,17 @@ export function processMetadataFiles(files, connection) {
             fileMap[shortName] = file['value'];
         }
 
-        let requiredFiles = ['student_courseenrollment-prod-analytics', 'auth_user-prod-analytics',
-            'certificates_generatedcertificate-prod-analytics', 'auth_userprofile-prod-analytics',
-            'prod'];
+        let requiredFiles = ['student_courseenrollment-prod-analytics',
+            'certificates_generatedcertificate-prod-analytics', 'auth_userprofile-prod-analytics'];
+
+        console.log('Processing ' + requiredFiles.length + ' files')
+        for (let file of requiredFiles) {
+            if (!(file in fileMap)) {
+                console.log(`${file} file is missing!`);
+                loader(false);
+                return
+            }
+        }
 
         if (! requiredFiles.every(function(x) { return x in fileMap; })) {
             toastr.error('Some files are missing');
@@ -57,19 +65,19 @@ export function processMetadataFiles(files, connection) {
 
             let enrollmentValues = processEnrollment(course_id, fileMap['student_courseenrollment-prod-analytics'], courseMetadataMap);
 
-            let learnerAuthMap = processAuthMap(fileMap['auth_user-prod-analytics'], enrollmentValues);
+            // let learnerAuthMap = processAuthMap(fileMap['auth_user-prod-analytics'], enrollmentValues);
 
             let certificateValues = processCertificates(fileMap['certificates_generatedcertificate-prod-analytics'], enrollmentValues, courseMetadataMap);
 
-            let demographicValues = processDemographics(course_id, fileMap['auth_userprofile-prod-analytics'], enrollmentValues, learnerAuthMap);
+            let demographicValues = processDemographics(course_id, fileMap['auth_userprofile-prod-analytics'], enrollmentValues, {});
 
             let groupMap = {};
             if ('course_groups_cohortmembership-prod-analytics' in fileMap) {
                 groupMap = processGroups(course_id, fileMap['course_groups_cohortmembership-prod-analytics'], enrollmentValues);
             }
 
-            let forumInteractionRecords = processForumPostingInteraction(fileMap['prod'], courseMetadataMap);
-
+            let forumInteractionRecords = []
+            
             console.log('All metadata ready');
             if (courseRecord.length === 0) {
                 console.log('No courses info');
@@ -482,19 +490,19 @@ export function processCertificates(inputFile, enrollmentValues, courseMetadataM
  * @param {string} inputFile String with contents of the auth file
  * @param {object} enrollmentValues Object with the enrollment values returned by the processEnrollment function
  */
-export function processAuthMap(inputFile, enrollmentValues) {
-    let learnerAuthMap = {};
-    for (let line of inputFile.split('\n')) {
-        let record = line.split('\t');
-        if (enrollmentValues.enrolledLearnerSet.has(record[0])) {
-            learnerAuthMap[record[0]] = {
-                'mail':record[4],
-                'staff': record[6]
-            }
-        }
-    }
-    return learnerAuthMap
-}
+// export function processAuthMap(inputFile, enrollmentValues) {
+//     let learnerAuthMap = {};
+//     for (let line of inputFile.split('\n')) {
+//         let record = line.split('\t');
+//         if (enrollmentValues.enrolledLearnerSet.has(record[0])) {
+//             learnerAuthMap[record[0]] = {
+//                 'mail':record[4],
+//                 'staff': record[6]
+//             }
+//         }
+//     }
+//     return learnerAuthMap
+// }
 
 /**
  * Processing of group file, to assign cohort or group number to learners
@@ -539,7 +547,7 @@ export function processDemographics(courseId, inputFile, enrollmentValues, learn
             course_learner_id = courseId + '_' + global_learner_id;
         if (enrollmentValues.enrolledLearnerSet.has(global_learner_id)) {
             let array = [course_learner_id, gender, year_of_birth, level_of_education, country,
-                learnerAuthMap[global_learner_id]['mail'], enrollmentValues.learnerSegmentMap[global_learner_id]];
+                '', enrollmentValues.learnerSegmentMap[global_learner_id]];
             learnerDemographicRecord.push(array);
         }
     }
