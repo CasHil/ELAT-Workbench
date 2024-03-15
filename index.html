@@ -629,7 +629,7 @@
 
     <div class="gridster">
       <ul>
-        <li id="mixedTile">
+        <!-- <li id="mixedTile">
           <header>|||</header>
           <div class="container-fluid" id="mixedChartBox">
             <div id="mixedChart"></div>
@@ -803,8 +803,8 @@
               <label style="float: left" for="arcType">Student Status - </label>
               <select name="type" id="arcType" style="float: left">
                 <option value="general">Everyone</option>
-                <option value="passing">Passing Only</option>
-                <option value="failing">Failing Only</option>
+                <option value="passing">Male only</option>
+                <option value="failing">Female only</option>
               </select>
             </form>
             <div style="width: 100%; overflow-x: auto; overflow-y: hidden">
@@ -813,7 +813,7 @@
               </div>
             </div>
           </div>
-        </li>
+        </li> -->
         <li id="cycleTile">
           <header>|||</header>
           <div class="container-fluid" id="cycleChartBox">
@@ -877,9 +877,9 @@
                 >Student Status -
               </label>
               <select name="type" id="cycleType" style="float: left">
-                <option value="downloadable">Passing Only</option>
-                <option value="notpassing">Failing Only</option>
-                <option value="general">Passing and Failing</option>
+                <option value="downloadable">Male Only</option>
+                <option value="female">Female Only</option>
+                <option value="general">Both</option>
                 <option value="designed">Designed</option>
               </select>
               <label for="cycleWeek"> Week - </label>
