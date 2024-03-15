@@ -219,8 +219,6 @@ export async function processMetadataFiles(files, connection) {
         console.log("no learner demographic info");
       } else {
         let data = [];
-        console.log("Learner Demographic Record:", learnerDemographicRecord);
-
         for (let learner of learnerDemographicRecord) {
           let course_learner_id = processNull(learner["course_learner_id"]),
             gender = learner["gender"],
@@ -240,8 +238,6 @@ export async function processMetadataFiles(files, connection) {
           };
           data.push(values);
         }
-        console.log("Data:", data);
-        console.log(data[0]);
         sqlInsert("learner_demographic", data, connection);
       }
 
