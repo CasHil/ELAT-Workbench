@@ -167,7 +167,7 @@ function showDetailsTable(connection) {
         loader(true);
         connection
           .runSql("select * from courses")
-          .then(async function (courses) {
+          .then(function (courses) {
             courses.forEach(async function (course) {
               let courseMetadataMap = {};
               await connection
@@ -187,221 +187,221 @@ function showDetailsTable(connection) {
               await connection.runSql(query).then(function (result) {
                 segmentation = result[0]["object"]["type"];
               });
-            });
+              let segmentMap = {
+                none: ["none"],
+                ab: ["none", "A", "B"],
+                abc: ["none", "A", "B", "C"],
+              };
 
-            let segmentMap = {
-              none: ["none"],
-              ab: ["none", "A", "B"],
-              abc: ["none", "A", "B", "C"],
-            };
+              for (let segment of segmentMap[segmentation]) {
+                let HtmlString = "";
+                let totalHtmlString = "";
+                let totalSessionCounter = 0;
+                let totalForumSessionCounter = 0;
+                let totalVideoInteractionCounter = 0;
+                let totalSubmissionCounter = 0;
+                let totalAssessmentCounter = 0;
+                let totalQuizSessionCounter = 0;
+                let sessionCounter = 0;
+                let forumSessionCounter = 0;
+                let forumInteractionCounter = 0;
+                let videoInteractionCounter = 0;
+                let submissionCounter = 0;
+                let assessmentCounter = 0;
+                let quizSessionCounter = 0;
+                totalHtmlString +=
+                  "<tr ItemId=" + "total" + "><td>" + "Total" + "</td><td>";
+                HtmlString +=
+                  "<tr ItemId=" +
+                  course.course_id +
+                  "><td>" +
+                  course.course_name +
+                  "</td><td>";
+                query = "SELECT * FROM sessions";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    totalSessionCounter++;
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      sessionCounter++;
+                    }
+                  });
+                });
+                query = "SELECT * FROM forum_sessions";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
 
-            for (let segment of segmentMap[segmentation]) {
-              let HtmlString = "";
-              let totalHtmlString = "";
-              let totalSessionCounter = 0;
-              let totalForumSessionCounter = 0;
-              let totalVideoInteractionCounter = 0;
-              let totalSubmissionCounter = 0;
-              let totalAssessmentCounter = 0;
-              let totalQuizSessionCounter = 0;
-              let sessionCounter = 0;
-              let forumSessionCounter = 0;
-              let forumInteractionCounter = 0;
-              let videoInteractionCounter = 0;
-              let submissionCounter = 0;
-              let assessmentCounter = 0;
-              let quizSessionCounter = 0;
-              totalHtmlString +=
-                "<tr ItemId=" + "total" + "><td>" + "Total" + "</td><td>";
-              HtmlString +=
-                "<tr ItemId=" +
-                course.course_id +
-                "><td>" +
-                course.course_name +
-                "</td><td>";
-              query = "SELECT * FROM sessions";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  totalSessionCounter++;
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    sessionCounter++;
-                  }
-                  loader(false);
+                    totalForumSessionCounter++;
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      forumSessionCounter++;
+                    }
+                  });
                 });
-              });
-              query = "SELECT * FROM forum_sessions";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
+                query = "SELECT * FROM forum_interaction";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
 
-                  totalForumSessionCounter++;
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    forumSessionCounter++;
-                  }
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      forumInteractionCounter++;
+                    }
+                  });
                 });
-              });
-              query = "SELECT * FROM forum_interaction";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
+                query = "SELECT * FROM video_interactions";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    totalVideoInteractionCounter++;
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      videoInteractionCounter++;
+                    }
+                  });
+                });
+                query = "SELECT * FROM submissions";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    totalSubmissionCounter++;
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      submissionCounter++;
+                    }
+                  });
+                });
+                query = "SELECT * FROM assessments";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
 
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    forumInteractionCounter++;
-                  }
+                    totalAssessmentCounter++;
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      assessmentCounter++;
+                    }
+                  });
                 });
-              });
-              query = "SELECT * FROM video_interactions";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
-                  totalVideoInteractionCounter++;
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    videoInteractionCounter++;
-                  }
+                query = "SELECT * FROM quiz_sessions";
+                await connection.runSql(query).then(function (sessions) {
+                  sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    totalQuizSessionCounter++;
+                    if (
+                      session["course_learner_id"].includes(course.course_id) &&
+                      (segment === "none" || seg === segment)
+                    ) {
+                      quizSessionCounter++;
+                    }
+                  });
                 });
-              });
-              query = "SELECT * FROM submissions";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
-                  totalSubmissionCounter++;
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    submissionCounter++;
-                  }
-                });
-              });
-              query = "SELECT * FROM assessments";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
-
-                  totalAssessmentCounter++;
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    assessmentCounter++;
-                  }
-                });
-              });
-              query = "SELECT * FROM quiz_sessions";
-              await connection.runSql(query).then(function (sessions) {
-                sessions.forEach(function (session) {
-                  const seg = learnerSegmentation(
-                    session["course_learner_id"],
-                    segmentation,
-                    connection,
-                  );
-                  if (seg === null) {
-                    return;
-                  }
-                  totalQuizSessionCounter++;
-                  if (
-                    session["course_learner_id"].includes(course.course_id) &&
-                    (segment === "none" || seg === segment)
-                  ) {
-                    quizSessionCounter++;
-                  }
-                });
-              });
-              totalHtmlString +=
-                totalSessionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                totalForumSessionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                totalVideoInteractionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                totalSubmissionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                totalAssessmentCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                totalQuizSessionCounter.toLocaleString("en-US");
-              HtmlString +=
-                sessionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                forumSessionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                forumInteractionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                videoInteractionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                submissionCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                assessmentCounter.toLocaleString("en-US") +
-                "</td><td>" +
-                quizSessionCounter.toLocaleString("en-US");
-              document.getElementById("loading").style.display = "none";
-              if (segment === "none") {
-                $("#dbGrid tbody").html(HtmlString);
+                totalHtmlString +=
+                  totalSessionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  totalForumSessionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  totalVideoInteractionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  totalSubmissionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  totalAssessmentCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  totalQuizSessionCounter.toLocaleString("en-US");
+                HtmlString +=
+                  sessionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  forumSessionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  forumInteractionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  videoInteractionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  submissionCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  assessmentCounter.toLocaleString("en-US") +
+                  "</td><td>" +
+                  quizSessionCounter.toLocaleString("en-US");
+                document.getElementById("loading").style.display = "none";
+                if (segment === "none") {
+                  $("#dbGrid tbody").html(HtmlString);
+                }
+                let databaseDetails = [
+                  {
+                    name: "databaseDetails_" + segment,
+                    object: { details: HtmlString },
+                  },
+                ];
+                sqlInsert("webdata", databaseDetails, connection);
               }
-              let databaseDetails = [
-                {
-                  name: "databaseDetails_" + segment,
-                  object: { details: HtmlString },
-                },
-              ];
-              sqlInsert("webdata", databaseDetails, connection);
-            }
-
-            loader(false);
+              loader(false);
+            });
+          })
+          .catch(function (error) {
+            console.log(error);
           });
       }
     });
@@ -454,6 +454,7 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
+                  console.log(result);
                   completed = result;
                 });
                 query = "COUNT * from learner_demographic";
@@ -461,11 +462,13 @@ function showMainIndicatorsTable(connection) {
                   query += " WHERE segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
+                  console.log(result);
                   completionRate = completed / result;
                 });
-                // query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
+                // query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable'";
                 // if (segment !== 'none') {query += " && segment = '" + segment + "' "}
                 // await connection.runSql(query).then(function (result) {
+                //     console.log(result)
                 //     avgGrade = result[0]['avg(final_grade)'] * 100;
                 // });
                 query =
@@ -474,6 +477,7 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
+                  console.log(result);
                   verifiedLearners = result;
                 });
                 query =
@@ -482,6 +486,7 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
+                  console.log(result);
                   honorLearners = result;
                 });
                 query =
@@ -491,33 +496,32 @@ function showMainIndicatorsTable(connection) {
                 }
                 await connection.runSql(query).then(function (result) {
                   auditLearners = result;
+                  console.log(result);
                 });
-                query =
-                  "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
-                if (segment !== "none") {
-                  query += " && segment = '" + segment + "' ";
-                }
-                query += "GROUP BY enrollment_mode";
-                await connection.runSql(query).then(function (results) {
-                  results.forEach(function (result) {
-                    avgGrades[result.enrollment_mode] = (
-                      result["avg(final_grade)"] * 100
-                    ).toFixed(1);
-                  });
-                });
+                // query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
+                // if (segment !== 'none') {query += " && segment = '" + segment + "' "}
+                // query += "GROUP BY enrollment_mode";
+                // await connection.runSql(query).then(function (results) {
+                //     results.forEach(function (result) {
+                //         console.log(result)
+                //         avgGrades[result.enrollment_mode] = (result['avg(final_grade)'] * 100).toFixed(1);
+                //     });
+                // });
                 query =
                   "SELECT [sum(duration)] from video_interactions GROUP BY course_learner_id";
                 await connection.runSql(query).then(function (watchers) {
                   videoDuration = 0;
                   videoWatchers = 0;
                   watchers.forEach(function (watcher) {
-                    if (
-                      segment === "none" ||
-                      learnerSegmentation(
-                        watcher["course_learner_id"],
-                        segmentation,
-                      ) === segment
-                    ) {
+                    const seg = learnerSegmentation(
+                      watcher["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    if (segment === "none" || seg === segment) {
                       videoDuration += watcher["sum(duration)"];
                       videoWatchers += 1;
                     }
@@ -527,7 +531,8 @@ function showMainIndicatorsTable(connection) {
                 HtmlString +=
                   completionRate.toFixed(2).toLocaleString("en-US") +
                   "</td><td>" +
-                  // avgGrade.toFixed(2).toLocaleString('en-US')  + "</td><td>" +
+                  avgGrade.toFixed(2).toLocaleString("en-US") +
+                  "</td><td>" +
                   "Verified: " +
                   verifiedLearners.toLocaleString("en-US") +
                   "<br>" +
