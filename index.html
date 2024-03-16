@@ -258,7 +258,6 @@
                     class="form-check-input"
                     name="segmentationRule"
                     value="none"
-                    checked
                   />
                   No Segmentation
                 </label>
@@ -271,8 +270,9 @@
                     class="form-check-input"
                     name="segmentationRule"
                     value="ab"
+                    checked
                   />
-                  A/B: A is even Learner Id, B is odd
+                  A/B: A is male, B is female
                 </label>
               </div>
               <div class="form-check">
@@ -877,9 +877,9 @@
                 >Student Status -
               </label>
               <select name="type" id="cycleType" style="float: left">
-                <option value="downloadable">Male Only</option>
-                <option value="female">Female Only</option>
-                <option value="general">Both</option>
+                <option value="downloadable">Passing Only</option>
+                <option value="notpassing">Failing Only</option>
+                <option value="general">Passing and Failing</option>
                 <option value="designed">Designed</option>
               </select>
               <label for="cycleWeek"> Week - </label>

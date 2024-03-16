@@ -47,15 +47,15 @@ export async function drawCharts(connection) {
     }
   }
 
-  drawApexCharts(graphElementMap, startDate, endDate, weekly);
+  // drawApexCharts(graphElementMap, startDate, endDate, weekly);
 
-  drawChartJS(graphElementMap, startDate, endDate, weekly);
+  // drawChartJS(graphElementMap, startDate, endDate, weekly);
 
-  drawVideoTransitionArcChart(connection);
+  // drawVideoTransitionArcChart(connection);
 
   drawCycles(connection);
 
-  drawAreaDropoutChart(startDate, endDate, connection, weekly);
+  // drawAreaDropoutChart(startDate, endDate, connection, weekly);
 }
 
 /**
@@ -68,7 +68,7 @@ export async function drawCharts(connection) {
 function drawChartJS(graphElementMap, startDate, endDate, weekly) {
   drawLineChart(graphElementMap, startDate, endDate, weekly);
   drawAreaChart(graphElementMap, startDate, endDate, weekly);
-  // drawBoxChart(graphElementMap, startDate, endDate, weekly);
+  drawBoxChart(graphElementMap, startDate, endDate, weekly);
 }
 
 /**
@@ -130,11 +130,12 @@ export async function updateCharts(connection, start, end, segment) {
 }
 
 export async function updateChartsBySegment(connection, start, end, segment) {
-  await updateCharts(connection, start, end, segment);
+  // await updateCharts(connection, start, end, segment);
 
-  let graphElementMap = await getGraphElementMap(connection, segment);
-  drawHeatChart(graphElementMap);
-  drawVideoTransitionArcChart(connection, segment);
+  // let graphElementMap = await getGraphElementMap(connection, segment);
+  // drawHeatChart(graphElementMap);
+  // drawVideoTransitionArcChart(connection, segment);
+  console.log(segment);
   drawCycles(connection, segment);
 }
 
@@ -1543,10 +1544,11 @@ function calculateVideoTransitions(connection) {
             failingViewers = 0,
             counter = 0;
           for (let learner of learnerIds) {
-            if (
-              segment === "none" ||
-              learnerSegmentation(learner, segmentation) === segment
-            ) {
+            const seg = learnerSegmentation(learner, segmentation, connection);
+            if (seg === null) {
+              return;
+            }
+            if (segment === "none" || seg === segment) {
               let learnerSessions = [];
               let query =
                 "SELECT * FROM video_interactions WHERE course_learner_id = '" +
@@ -2075,14 +2077,20 @@ function calculateModuleCycles(connection) {
             .runSql("SELECT * FROM course_learner")
             .then(function (learners) {
               learners.forEach(function (learner) {
-                if (
-                  segment === "none" ||
-                  learnerSegmentation(
-                    learner.course_learner_id,
-                    segmentation,
-                  ) === segment
-                ) {
+                if (learner.course_learner_id.includes("course")) {
+                  return;
+                }
+                const seg = learnerSegmentation(
+                  learner.course_learner_id,
+                  segmentation,
+                  connection,
+                );
+                if (seg === null) {
+                  return;
+                }
+                if (segment === "none" || seg === segment) {
                   learnerIds.push(learner.course_learner_id);
+
                   if (learner.certificate_status !== null) {
                     learnerStatus[learner.course_learner_id] =
                       learner.certificate_status;
@@ -2543,6 +2551,7 @@ function drawCycles(connection, segment) {
       "SELECT * FROM webdata WHERE name = 'cycleElements_" + segment + "' ",
     )
     .then(function (result) {
+      console.log(result);
       if (result.length !== 1) {
         console.log("Start transition calculation");
         calculateModuleCycles(connection);
@@ -2576,7 +2585,7 @@ function drawCycles(connection, segment) {
 
         let linkWeek = d3.select("#cycleWeek");
         linkWeek.on("change", function () {
-          drawCycles(connection);
+          drawCycles(connection, segment);
         });
         let week = linkWeek.node().value;
         let weekLinks = linkData["links"][week];
@@ -2587,7 +2596,7 @@ function drawCycles(connection, segment) {
 
         let linkSlider = d3.select("#linksCycle");
         linkSlider.on("change", function () {
-          drawCycles(connection);
+          drawCycles(connection, segment);
         });
         let linkNumber = linkSlider.node().value;
 
@@ -2595,7 +2604,7 @@ function drawCycles(connection, segment) {
 
         let typeDropdown = d3.select("#cycleType");
         typeDropdown.on("change", function () {
-          drawCycles(connection);
+          drawCycles(connection, segment);
         });
         // https://www.d3-graph-gallery.com/graph/network_basic.html
         let svg = d3
@@ -2643,6 +2652,9 @@ function drawCycles(connection, segment) {
 
         let cycleType = typeDropdown.node().value;
 
+        console.log(cycleType);
+
+        console.log(weekLinks);
         let link = svg
           .append("g")
           .selectAll("links")

@@ -98,22 +98,29 @@ export async function processMetadataFiles(files, connection) {
         course_id,
         fileMap["student_courseenrollment-prod-analytics"],
         courseMetadataMap,
+        connection,
       );
 
+      console.log("Enrollment values ready");
       // let learnerAuthMap = processAuthMap(fileMap['auth_user-prod-analytics'], enrollmentValues);
 
-      let certificateValues = processCertificates(
-        fileMap["certificates_generatedcertificate-prod-analytics"],
-        enrollmentValues,
-        courseMetadataMap,
-      );
+      // let certificateValues = processCertificates(
+      //   fileMap["certificates_generatedcertificate-prod-analytics"],
+      //   enrollmentValues,
+      //   courseMetadataMap,
+      // );
+
+      let certificateValues = { courseLearnerRecord: [] };
+      console.log("Certificate values ready");
 
       let learnerDemographicRecord = await processDemographics(
         course_id,
-        "samples/edx_demographics/user_profiles.json",
+        "samples/edx_demographics/user_profiles_updated.json",
         enrollmentValues,
         {},
       );
+
+      console.log("Demographic values ready");
 
       let groupMap = {};
       if ("course_groups_cohortmembership-prod-analytics" in fileMap) {
@@ -123,6 +130,8 @@ export async function processMetadataFiles(files, connection) {
           enrollmentValues,
         );
       }
+
+      console.log("Group values ready");
 
       let forumInteractionRecords = [];
 
@@ -461,7 +470,12 @@ function ExtractCourseInformation(files) {
  * @param {object} courseMetadataMap Object with the course metadata information
  * @returns {{enrolledLearnerSet: *, learnerIndexRecord: *, learnerModeMap: *, learnerEnrollmentTimeMap: *, courseLearnerMap: *}}
  */
-export function processEnrollment(courseId, inputFile, courseMetadataMap) {
+export function processEnrollment(
+  courseId,
+  inputFile,
+  courseMetadataMap,
+  connection,
+) {
   let courseLearnerMap = {};
   let learnerEnrollmentTimeMap = {};
   let enrolledLearnerSet = new Set();
@@ -490,7 +504,11 @@ export function processEnrollment(courseId, inputFile, courseMetadataMap) {
       courseLearnerMap[globalLearnerId] = courseLearnerId;
       learnerEnrollmentTimeMap[globalLearnerId] = time;
       learnerModeMap[globalLearnerId] = mode;
-      learnerSegmentMap[globalLearnerId] = learnerSegmentation(globalLearnerId);
+      learnerSegmentMap[globalLearnerId] = learnerSegmentation(
+        globalLearnerId,
+        "none",
+        connection,
+      );
     }
   }
   return {
@@ -688,7 +706,8 @@ export function processDemographics(
           year_of_birth = learner["year_of_birth"],
           level_of_education = learner["level_of_education"],
           goals = learner["goals"],
-          country = learner["country"];
+          country = learner["country"],
+          segment = learner["segment"];
 
         let learner_demographic_info = {
           course_learner_id: course_learner_id,
@@ -697,7 +716,7 @@ export function processDemographics(
           level_of_education: level_of_education,
           country: country,
           goals: goals,
-          segment: enrollmentValues.learnerSegmentMap[course_learner_id],
+          segment: segment,
         };
 
         learnerDemographicRecord.push(learner_demographic_info);

@@ -221,13 +221,17 @@ function showDetailsTable(connection) {
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
                     totalSessionCounter++;
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       sessionCounter++;
                     }
@@ -236,14 +240,19 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM forum_sessions";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+
                     totalForumSessionCounter++;
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       forumSessionCounter++;
                     }
@@ -252,13 +261,18 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM forum_interaction";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       forumInteractionCounter++;
                     }
@@ -267,14 +281,18 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM video_interactions";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
                     totalVideoInteractionCounter++;
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       videoInteractionCounter++;
                     }
@@ -283,14 +301,18 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM submissions";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
                     totalSubmissionCounter++;
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       submissionCounter++;
                     }
@@ -299,14 +321,19 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM assessments";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+
                     totalAssessmentCounter++;
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       assessmentCounter++;
                     }
@@ -315,14 +342,18 @@ function showDetailsTable(connection) {
                 query = "SELECT * FROM quiz_sessions";
                 await connection.runSql(query).then(function (sessions) {
                   sessions.forEach(function (session) {
+                    const seg = learnerSegmentation(
+                      session["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
                     totalQuizSessionCounter++;
                     if (
                       session["course_learner_id"].includes(course.course_id) &&
-                      (segment === "none" ||
-                        learnerSegmentation(
-                          session["course_learner_id"],
-                          segmentation,
-                        ) === segment)
+                      (segment === "none" || seg === segment)
                     ) {
                       quizSessionCounter++;
                     }
@@ -481,15 +512,16 @@ function showMainIndicatorsTable(connection) {
                 await connection.runSql(query).then(function (watchers) {
                   videoDuration = 0;
                   videoWatchers = 0;
-                  console.log(watchers);
                   watchers.forEach(function (watcher) {
-                    if (
-                      segment === "none" ||
-                      learnerSegmentation(
-                        watcher["course_learner_id"],
-                        segmentation,
-                      ) === segment
-                    ) {
+                    const seg = learnerSegmentation(
+                      watcher["course_learner_id"],
+                      segmentation,
+                      connection,
+                    );
+                    if (seg === null) {
+                      return;
+                    }
+                    if (segment === "none" || seg === segment) {
                       videoDuration += watcher["sum(duration)"];
                       videoWatchers += 1;
                     }
