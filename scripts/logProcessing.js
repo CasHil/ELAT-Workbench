@@ -543,6 +543,9 @@ export function processForumSessions(
     if (connection === null) {
       return data;
     }
+
+    console.log("Forum data", data);
+
     sqlLogInsert("forum_sessions", data, connection);
     progressDisplay(
       data.length + " forum interaction sessions",
@@ -1077,6 +1080,9 @@ export function processVideoInteractionSessions(
     if (connection === null) {
       return data;
     }
+
+    console.log("Video interaction data", data);
+
     sqlLogInsert("video_interactions", data, connection);
     progressDisplay(
       data.length + " video interaction sessions",
@@ -1191,11 +1197,13 @@ export function processAssessmentsSubmissions(
     if (assessment_data.length === 0) {
       console.log("No assessment data", index, total);
     } else {
+      console.log("Assessment data", assessment_data);
       sqlLogInsert("assessments", assessment_data, connection);
     }
     if (submission_data.length === 0) {
       console.log("No submission data", index, total);
     } else {
+      console.log("Submission data", submission_data);
       sqlLogInsert("submissions", submission_data, connection);
     }
   }
@@ -1539,6 +1547,7 @@ export function processQuizSessions(
     console.log("No quiz session data");
   } else {
     let data = [];
+    console.log(quiz_session_record);
     for (let array of quiz_session_record) {
       let session_id = array[0];
       if (chunk !== 0) {
@@ -1563,6 +1572,7 @@ export function processQuizSessions(
     if (connection === null) {
       return data;
     }
+    console.log("Quiz session data", data);
     sqlLogInsert("quiz_sessions", data, connection);
     progressDisplay(
       data.length + " quiz interaction sessions",
@@ -1907,6 +1917,7 @@ export function processORASessions(
       return data;
     }
     console.log("Sending ORA sessions to storage at " + new Date());
+    console.log("ORA session data", data);
     sqlLogInsert("ora_sessions", data, connection);
     progressDisplay(
       data.length + " ORA interaction sessions",

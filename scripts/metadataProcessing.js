@@ -115,7 +115,7 @@ export async function processMetadataFiles(files, connection) {
 
       let learnerDemographicRecord = await processDemographics(
         course_id,
-        "samples/edx_demographics/user_profiles_updated.json",
+        "samples/edx_demographics/filtered_user_profiles.json",
         enrollmentValues,
         {},
       );

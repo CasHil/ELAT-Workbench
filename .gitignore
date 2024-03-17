@@ -1,2 +1,3 @@
 node_modules
-samples/edx_demographics
+samples/edx_demographics/*
+!samples/edx_demographics/add_segment.py

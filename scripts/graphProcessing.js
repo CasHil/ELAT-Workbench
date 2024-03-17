@@ -17,35 +17,35 @@ import { loader, learnerSegmentation } from "./helpers.js";
 export async function drawCharts(connection) {
   loader(true);
 
-  let graphElementMap = await getGraphElementMap(connection);
+  // let graphElementMap = await getGraphElementMap(connection);
 
-  let startDate = new Date();
-  let endDate = new Date();
-  let weekly = true;
+  // let startDate = new Date();
+  // let endDate = new Date();
+  // let weekly = true;
 
-  let radioValue = $("input[name='processedOrInRange']:checked").val();
-  if (radioValue) {
-    if (radioValue === "allDates") {
-      startDate = new Date(graphElementMap["dateListChart"][0]);
-      endDate = new Date(
-        graphElementMap["dateListChart"][
-          graphElementMap["dateListChart"].length - 1
-        ],
-      );
-    } else if (radioValue === "courseDates") {
-      endDate = new Date(graphElementMap["end_date"]);
-      startDate = new Date(graphElementMap["start_date"]);
-    }
-  }
+  // let radioValue = $("input[name='processedOrInRange']:checked").val();
+  // if (radioValue) {
+  //   if (radioValue === "allDates") {
+  //     startDate = new Date(graphElementMap["dateListChart"][0]);
+  //     endDate = new Date(
+  //       graphElementMap["dateListChart"][
+  //         graphElementMap["dateListChart"].length - 1
+  //       ],
+  //     );
+  //   } else if (radioValue === "courseDates") {
+  //     endDate = new Date(graphElementMap["end_date"]);
+  //     startDate = new Date(graphElementMap["start_date"]);
+  //   }
+  // }
 
-  let radioValueWeekly = $("input[name='dailyOrWeekly']:checked").val();
-  if (radioValueWeekly) {
-    if (radioValueWeekly === "weekly") {
-      weekly = true;
-    } else if (radioValueWeekly === "daily") {
-      weekly = false;
-    }
-  }
+  // let radioValueWeekly = $("input[name='dailyOrWeekly']:checked").val();
+  // if (radioValueWeekly) {
+  //   if (radioValueWeekly === "weekly") {
+  //     weekly = true;
+  //   } else if (radioValueWeekly === "daily") {
+  //     weekly = false;
+  //   }
+  // }
 
   // drawApexCharts(graphElementMap, startDate, endDate, weekly);
 
@@ -135,7 +135,6 @@ export async function updateChartsBySegment(connection, start, end, segment) {
   // let graphElementMap = await getGraphElementMap(connection, segment);
   // drawHeatChart(graphElementMap);
   // drawVideoTransitionArcChart(connection, segment);
-  console.log(segment);
   drawCycles(connection, segment);
 }
 
@@ -1585,6 +1584,7 @@ function calculateVideoTransitions(connection) {
               }
             }
           }
+
           // console.log(segment, Object.keys(videoChains).length);
           // console.log(Object.keys(passingChains).length, passingViewers);
           // console.log(Object.keys(failingChains).length, failingViewers);
@@ -2074,29 +2074,26 @@ function calculateModuleCycles(connection) {
           courseId = courseId.slice(courseId.indexOf(":") + 1);
           let startingWeek = course_metadata_map.start_date.getWeek();
           await connection
-            .runSql("SELECT * FROM course_learner")
+            .runSql("SELECT * FROM learner_demographic")
             .then(function (learners) {
               learners.forEach(function (learner) {
-                if (learner.course_learner_id.includes("course")) {
-                  return;
-                }
-                const seg = learnerSegmentation(
-                  learner.course_learner_id,
-                  segmentation,
-                  connection,
-                );
+                // console.log(learner);
+                const seg = learner.segment;
+
                 if (seg === null) {
                   return;
                 }
                 if (segment === "none" || seg === segment) {
                   learnerIds.push(learner.course_learner_id);
+                  // console.log(learner);
 
-                  if (learner.certificate_status !== null) {
-                    learnerStatus[learner.course_learner_id] =
-                      learner.certificate_status;
-                  } else {
-                    learnerStatus[learner.course_learner_id] = "unfinished";
-                  }
+                  // if (learner.certificate_status !== null) {
+                  //   learnerStatus[learner.course_learner_id] =
+                  //     learner.certificate_status;
+                  // } else {
+
+                  // Learners status does not matter.
+                  learnerStatus[learner.course_learner_id] = "downloadable";
                 }
               });
             });
@@ -2206,8 +2203,20 @@ function calculateModuleCycles(connection) {
           const allSessions = {},
             lastElements = [],
             lastSessions = [];
+
+          // console.log("LearnerIds: ", learnerIds);
           for (let learnerId of learnerIds) {
+            console.log(learnerId);
             totalLearners++;
+
+            // Print a percentage of the progress
+            if (totalLearners % 100 === 0) {
+              console.log(
+                "Progress: ",
+                (totalLearners / learnerIds.length) * 100,
+                "%",
+              );
+            }
             allSessions[learnerId] = [];
             let status = learnerStatus[learnerId];
             if (status === "downloadable") {
@@ -2217,11 +2226,12 @@ function calculateModuleCycles(connection) {
             }
             await connection
               .runSql(
-                "SELECT * FROM forum_sessions WHERE course_learner_id = '" +
+                "SELECT * FROM forum_sessions WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
               .then(function (sessions) {
+                // console.log("Forum sessions", sessions);
                 sessions.forEach(function (session) {
                   let forumStartSession = $.extend({}, session);
                   forumStartSession["type"] = "forum";
@@ -2253,11 +2263,12 @@ function calculateModuleCycles(connection) {
               });
             await connection
               .runSql(
-                "SELECT * FROM forum_interaction WHERE course_learner_id = '" +
+                "SELECT * FROM forum_interaction WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
               .then(function (sessions) {
+                // console.log("Forum interaction", sessions);
                 sessions.forEach(function (session) {
                   session["type"] = "forum-post";
                   session["time"] = session.post_timestamp;
@@ -2273,11 +2284,12 @@ function calculateModuleCycles(connection) {
               });
             await connection
               .runSql(
-                "SELECT * FROM quiz_sessions WHERE course_learner_id = '" +
+                "SELECT * FROM quiz_sessions WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
               .then(function (sessions) {
+                // console.log("Quiz sessions", sessions);
                 sessions.forEach(function (session) {
                   let quizStartSession = $.extend({}, session);
                   quizStartSession["type"] = "quiz-start";
@@ -2303,11 +2315,12 @@ function calculateModuleCycles(connection) {
               });
             await connection
               .runSql(
-                "SELECT * FROM submissions WHERE course_learner_id = '" +
+                "SELECT * FROM submissions WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
               .then(function (sessions) {
+                // console.log("Submissions", sessions);
                 sessions.forEach(function (session) {
                   session["type"] = "submission";
                   session["time"] = session.submission_timestamp;
@@ -2321,11 +2334,12 @@ function calculateModuleCycles(connection) {
               });
             await connection
               .runSql(
-                "SELECT * FROM video_interactions WHERE course_learner_id = '" +
+                "SELECT * FROM video_interactions WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
               .then(function (sessions) {
+                // console.log("Video interactions", sessions);
                 sessions.forEach(function (session) {
                   session["type"] = "video";
                   session["time"] = session.start_time;
@@ -2341,7 +2355,7 @@ function calculateModuleCycles(connection) {
             //////////////////////// ORA//////////////////////// ORA//////////////////////// ORA//////////////////////// ORA
             await connection
               .runSql(
-                "SELECT * FROM ora_sessions WHERE course_learner_id = '" +
+                "SELECT * FROM ora_sessions WHERE course_learner_id LIKE '%" +
                   learnerId +
                   "' ",
               )
@@ -2383,13 +2397,13 @@ function calculateModuleCycles(connection) {
             }
           }
 
-          calculateDropoutValues(
-            course_metadata_map,
-            lastSessions,
-            lastElements,
-            connection,
-            segment,
-          );
+          // calculateDropoutValues(
+          //   course_metadata_map,
+          //   lastSessions,
+          //   lastElements,
+          //   connection,
+          //   segment,
+          // );
 
           let weekStart = new Date(
               course_metadata_map.start_date.toDateString(),
@@ -2407,6 +2421,8 @@ function calculateModuleCycles(connection) {
             };
             weekEnd = new Date(weekStart.toDateString());
             weekEnd = new Date(weekEnd.setDate(weekEnd.getDate() + 7));
+
+            console.log("All sessions: ", allSessions);
             for (let learnerId in allSessions) {
               let learningPath = [];
               for (let session of allSessions[learnerId]) {
@@ -2424,6 +2440,8 @@ function calculateModuleCycles(connection) {
             }
             weekStart = new Date(weekEnd);
             week++;
+
+            // console.log("learningPaths: ", learningPaths);
 
             for (let status in learningPaths) {
               elementIds[status] = {};
@@ -2551,13 +2569,14 @@ function drawCycles(connection, segment) {
       "SELECT * FROM webdata WHERE name = 'cycleElements_" + segment + "' ",
     )
     .then(function (result) {
-      console.log(result);
+      // console.log("Cycle elements:", result);
       if (result.length !== 1) {
         console.log("Start transition calculation");
         calculateModuleCycles(connection);
       } else {
         let linkData = result[0]["object"];
 
+        console.log("Link data", linkData);
         // let cycleTileDiv = document.getElementById("cycleTile");
         // cycleTileDiv.addEventListener("resize", drawCycles(connection));
 
@@ -2588,7 +2607,10 @@ function drawCycles(connection, segment) {
           drawCycles(connection, segment);
         });
         let week = linkWeek.node().value;
+        console.log("Week", week);
+
         let weekLinks = linkData["links"][week];
+        console.log("Week links", weekLinks);
 
         weekLinks.sort(function (a, b) {
           return b.value - a.value;
@@ -2652,9 +2674,10 @@ function drawCycles(connection, segment) {
 
         let cycleType = typeDropdown.node().value;
 
-        console.log(cycleType);
+        // console.log(cycleType);
 
-        console.log(weekLinks);
+        // console.log(weekLinks);
+
         let link = svg
           .append("g")
           .selectAll("links")
@@ -2691,6 +2714,7 @@ function drawCycles(connection, segment) {
           .style("pointer-events", "none")
           .text(function (d) {
             if (d.status === cycleType) {
+              // console.log("d.status", d.status);
               return d.value.toFixed(2);
             }
           });

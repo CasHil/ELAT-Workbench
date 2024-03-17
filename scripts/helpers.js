@@ -65,26 +65,45 @@ export function learnerSegmentation(learnerId, segmentation, connection) {
     segmentation = $("input[name='segmentationRule']:checked").val();
   }
 
+  let id = learnerId;
+  // If learnerId contains _, then split it and use the last part
+  if (learnerId.includes("_")) {
+    id = learnerId.split("_")[1];
+  }
+  // console.log("1");
+
   if (segmentation === "ab") {
+    // console.log("2");
     let query =
-      "SELECT segment FROM learner_demographic WHERE course_learner_id = " +
-      String(learnerId);
+      "SELECT segment FROM learner_demographic WHERE course_learner_id = '" +
+      String(id) +
+      "';";
 
-    connection.runSql(query).then(function (result) {
-      console.log("4");
-      if (result.length === 0) {
-        console.log("No result");
-        return null;
-      }
+    // console.log("3");
 
-      const segment = result[0]["object"]["segment"];
-      if (segment === null) {
-        console.log("No segment");
-        return null;
-      }
+    console.log(query);
 
-      return segment;
-    });
+    connection
+      .runSql(query)
+      .then(function (result) {
+        // console.log("4");
+        if (result.length === 0) {
+          console.log("No result");
+          return null;
+        }
+
+        const segment = result[0]["object"]["segment"];
+
+        if (segment === null) {
+          console.log("No segment");
+          return null;
+        }
+
+        return segment;
+      })
+      .catch(function (error) {
+        console.log("Error: " + error);
+      });
   }
 }
 

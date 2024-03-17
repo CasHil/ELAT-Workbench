@@ -7,8 +7,8 @@ import { loader, learnerSegmentation } from "./helpers.js";
  */
 export function prepareTables(connection) {
   showCourseTable(connection);
-  showDetailsTable(connection);
-  showMainIndicatorsTable(connection);
+  // showDetailsTable(connection);
+  // showMainIndicatorsTable(connection);
 }
 
 /**
@@ -454,7 +454,6 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
-                  console.log(result);
                   completed = result;
                 });
                 query = "COUNT * from learner_demographic";
@@ -462,7 +461,6 @@ function showMainIndicatorsTable(connection) {
                   query += " WHERE segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
-                  console.log(result);
                   completionRate = completed / result;
                 });
                 // query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable'";
@@ -477,7 +475,6 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
-                  console.log(result);
                   verifiedLearners = result;
                 });
                 query =
@@ -486,7 +483,6 @@ function showMainIndicatorsTable(connection) {
                   query += " && segment = '" + segment + "' ";
                 }
                 await connection.runSql(query).then(function (result) {
-                  console.log(result);
                   honorLearners = result;
                 });
                 query =
@@ -496,7 +492,6 @@ function showMainIndicatorsTable(connection) {
                 }
                 await connection.runSql(query).then(function (result) {
                   auditLearners = result;
-                  console.log(result);
                 });
                 // query = "SELECT [avg(final_grade)] from course_learner WHERE certificate_status = 'downloadable' ";
                 // if (segment !== 'none') {query += " && segment = '" + segment + "' "}
