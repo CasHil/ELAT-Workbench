@@ -1,10 +1,9 @@
 import gzip
 import json
+import os
 
+# This script adds segments to user profiles based on their gender ('m', 'f'), and filters the logs to only include users from these segments.
 def extract_all_user_ids(log_files):
-    """
-    Extract all unique user_ids from the provided log files.
-    """
     user_ids = set()
     for log_file in log_files:
         with gzip.open(log_file, 'rt', encoding='utf-8') as f:
@@ -18,20 +17,21 @@ def extract_all_user_ids(log_files):
                     continue
     return user_ids
 
+def find_log_files(base_path, prefixes):
+    log_files = []
+    for root, dirs, files in os.walk(base_path):
+        for file in files:
+            if file.endswith(".log.gz") and any(root.split(os.sep)[-1].startswith(prefix) for prefix in prefixes):
+                log_files.append(os.path.join(root, file))
+    return log_files
+
+base_path = 'W:/staff-umbrella/gdicsmoocs/Working copy'
+prefixes = ["EX101x", "ST1x", "UnixTx", "FP101x"]
+
 with open('user_profiles.json', 'r', encoding='utf-8') as json_file:
     user_profiles = json.load(json_file)
 
-log_files = [
-    'delftx-edx-events-2018-12-15.log.gz',
-    'delftx-edx-events-2018-12-14.log.gz',
-    'delftx-edx-events-2018-12-13.log.gz',
-    'delftx-edx-events-2018-12-12.log.gz',
-    'delftx-edx-events-2018-12-11.log.gz',
-    'delftx-edx-events-2018-12-10.log.gz',
-    'delftx-edx-events-2018-12-09.log.gz',
-    'delftx-edx-events-2018-12-08.log.gz'
-]
-log_files = [f'W:/staff-umbrella/gdicsmoocs/Working copy/EX101x_2T2018_run6 - Copy/{log_file}' for log_file in log_files]
+log_files = find_log_files(base_path, prefixes)
 
 all_user_ids_from_logs = extract_all_user_ids(log_files)
 
@@ -45,12 +45,10 @@ for profile in filtered_profiles:
         profile['segment'] = 'A'
     elif profile['gender'] == 'f':
         profile['segment'] = 'B'
-    else:
-        profile['segment'] = None
 
 hash_ids_filtered = set(profile['hash_id'] for profile in filtered_profiles)
 
-for idx, log_file in enumerate(log_files):
+for log_file in log_files:
     filtered_lines = []
     with gzip.open(log_file, 'rt', encoding='utf-8') as f:
         for line in f:
@@ -63,9 +61,10 @@ for idx, log_file in enumerate(log_files):
                 continue
     
     if filtered_lines:
-        output_file_name = f'{idx + 1}_filtered.log.gz'
-        new_file_path = f'W:/staff-umbrella/gdicsmoocs/Working copy/EX101x_2T2018_run6 - Copy/{output_file_name}'
-        with gzip.open(new_file_path, 'wt', encoding='utf-8') as outfile:
+        processed_dir = os.path.join(os.path.dirname(log_file), 'processed')
+        os.makedirs(processed_dir, exist_ok=True)
+        processed_file_path = os.path.join(processed_dir, os.path.basename(log_file))
+        with gzip.open(processed_file_path, 'wt', encoding='utf-8') as outfile:
             outfile.writelines(filtered_lines)
 
 with open('filtered_user_profiles.json', 'w', encoding='utf-8') as outfile:
