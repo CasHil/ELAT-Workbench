@@ -6,6 +6,7 @@ import os
 def extract_all_user_ids(log_files):
     user_ids = set()
     for log_file in log_files:
+        print("Extracting user_ids from", log_file)
         with gzip.open(log_file, 'rt', encoding='utf-8') as f:
             for line in f:
                 try:
@@ -31,15 +32,19 @@ prefixes = ["EX101x", "ST1x", "UnixTx", "FP101x"]
 with open('user_profiles.json', 'r', encoding='utf-8') as json_file:
     user_profiles = json.load(json_file)
 
+print("Finding log files...")
 log_files = find_log_files(base_path, prefixes)
 
+print("Extracting user ids from logs...")
 all_user_ids_from_logs = extract_all_user_ids(log_files)
 
+print("Filtering user profiles...")
 filtered_profiles = [
     profile for profile in user_profiles
     if profile['gender'] in ['m', 'f'] and profile['hash_id'] in all_user_ids_from_logs
 ]
 
+print("Adding segments to user profiles...")
 for profile in filtered_profiles:
     if profile['gender'] == 'm':
         profile['segment'] = 'A'
@@ -48,7 +53,9 @@ for profile in filtered_profiles:
 
 hash_ids_filtered = set(profile['hash_id'] for profile in filtered_profiles)
 
+print("Filtering log files...")
 for log_file in log_files:
+    print("Processing", log_file)
     filtered_lines = []
     with gzip.open(log_file, 'rt', encoding='utf-8') as f:
         for line in f:

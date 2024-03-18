@@ -54,6 +54,7 @@ export async function drawCharts(connection) {
   // drawVideoTransitionArcChart(connection);
 
   drawCycles(connection);
+  // drawCyclesAggregate(connection);
 
   // drawAreaDropoutChart(startDate, endDate, connection, weekly);
 }
@@ -2901,5 +2902,191 @@ function drawCycles(connection, segment) {
         });
       }
       loader(false);
+    });
+}
+
+function drawCyclesAggregate(connection, segment) {
+  if (!segment) {
+    segment = "none";
+  }
+  connection
+    .runSql(
+      "SELECT * FROM webdata WHERE name = 'cycleElements_" + segment + "' ",
+    )
+    .then(function (result) {
+      if (result.length !== 1) {
+        console.log("Start transition calculation");
+        calculateModuleCycles(connection);
+      } else {
+        let linkData = result[0]["object"];
+
+        $("#cycleChartAggregate").empty();
+        let cycleDiv = document.getElementById("cycleChartAggregate");
+
+        let margin = { top: 20, right: 20, bottom: 20, left: 20 },
+          width = cycleDiv.clientWidth - margin.left - margin.right,
+          height = cycleDiv.clientWidth / 2 - margin.top - margin.bottom;
+
+        let xUnit = width / 6;
+        let yUnit = height / 7;
+        let r = 10;
+        linkData["nodes"] = [
+          { name: "PROGRESS", cx: xUnit, cy: yUnit * 2, r: r },
+          { name: "FORUM START", cx: xUnit * 3, cy: yUnit, r: r },
+          { name: "FORUM SUBMIT", cx: xUnit * 5, cy: yUnit * 2, r: r },
+          { name: "FORUM END", cx: xUnit * 5, cy: yUnit * 5, r: r },
+          { name: "QUIZ START", cx: xUnit * 3, cy: yUnit * 6, r: r },
+          { name: "QUIZ SUBMIT", cx: xUnit * 2, cy: yUnit * 5, r: r },
+          { name: "QUIZ END", cx: xUnit, cy: yUnit * 5, r: r },
+          { name: "VIDEO", cx: xUnit * 2, cy: yUnit, r: r },
+          { name: "ORA", cx: xUnit * 4, cy: yUnit * 6, r: r },
+        ];
+
+        let allWeeksData = {};
+        let sourceTotals = {};
+
+        Object.keys(linkData.links).forEach((week) => {
+          linkData.links[week].forEach((link) => {
+            if (!sourceTotals[link.sourceNode]) {
+              sourceTotals[link.sourceNode] = 0;
+            }
+            sourceTotals[link.sourceNode] += link.value;
+          });
+        });
+
+        Object.keys(linkData.links).forEach((week) => {
+          linkData.links[week].forEach((link) => {
+            let key = link.sourceNode + "-" + link.targetNode;
+            if (!allWeeksData[key]) {
+              allWeeksData[key] = { ...link, value: 0 };
+            }
+            allWeeksData[key].value +=
+              link.value / sourceTotals[link.sourceNode];
+          });
+        });
+
+        console.log("All weeks data", allWeeksData);
+        let allWeekLinks = Object.values(allWeeksData);
+        allWeekLinks.sort(function (a, b) {
+          return b.value - a.value;
+        });
+
+        let svg = d3
+          .select(cycleDiv)
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")",
+          );
+
+        svg
+          .append("text")
+          .attr("x", width / 2)
+          .attr("y", 20 - margin.top / 2)
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .style("font-family", "Helvetica")
+          .text("Learning Path");
+
+        let defs = svg.append("defs");
+        let marker = function (color) {
+          defs
+            .append("marker")
+            .attr("id", color.replace("#", ""))
+            .attr("refX", 6)
+            .attr("refY", 6)
+            .attr("markerWidth", 30)
+            .attr("markerHeight", 30)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M 0 0 12 6 0 12 3 6")
+            .style("fill", color);
+          return "url(#" + color.replace("#", "") + ")";
+        };
+
+        let idToNode = {};
+        linkData.nodes.forEach(function (n) {
+          idToNode[n.name] = n;
+        });
+
+        let cycleType = "general";
+
+        let link = svg
+          .selectAll("path")
+          .data(allWeekLinks)
+          .enter()
+          .append("path")
+          .attr("d", function (d) {
+            let source = idToNode[d.sourceNode],
+              target = idToNode[d.targetNode],
+              dx = target.cx - source.cx,
+              dy = target.cy - source.cy,
+              dr = Math.sqrt(dx * dx + dy * dy),
+              drx = dr,
+              dry = dr,
+              xRotation = 0,
+              largeArc = 0,
+              sweep = 1;
+            if (d.source === d.target) {
+              drx = 20;
+              dry = 20;
+              xRotation = -45;
+              largeArc = 1;
+              sweep = 0;
+            }
+            return `M${source.cx},${source.cy}A${drx},${dry} ${xRotation} ${largeArc},${sweep} ${target.cx},${target.cy}`;
+          })
+          .style("fill", "none")
+          .attr("stroke", function (d) {
+            switch (d.status) {
+              case "designed":
+                return cycleType === "designed" ? "purple" : "#999";
+              case "downloadable":
+                return cycleType === "downloadable" ? "green" : "#999";
+              default:
+                return "#999";
+            }
+          })
+          .style("stroke-width", function (d) {
+            return Math.sqrt(d.value);
+          })
+          .attr("marker-end", "url(#arrowhead)");
+
+        svg
+          .selectAll("circle")
+          .data(linkData.nodes)
+          .enter()
+          .append("circle")
+          .attr("cx", function (d) {
+            return d.cx;
+          })
+          .attr("cy", function (d) {
+            return d.cy;
+          })
+          .attr("r", r)
+          .style("fill", "#69b3a2");
+
+        svg
+          .selectAll("text")
+          .data(linkData.nodes)
+          .enter()
+          .append("text")
+          .attr("x", function (d) {
+            return d.cx + 15;
+          })
+          .attr("y", function (d) {
+            return d.cy;
+          })
+          .text(function (d) {
+            return d.name;
+          })
+          .style("font-size", "12px")
+          .attr("alignment-baseline", "middle");
+
+        loader(false);
+      }
     });
 }

@@ -421,7 +421,7 @@ function prepareDashboard() {
         ];
       } else {
         defaultOrder = [
-          { id: "cycleTile", col: 1, row: 29, size_x: 7, size_y: 5 },
+          { id: "cycleTile", col: 1, row: 29, size_x: 12, size_y: 5 },
         ];
       }
       $.each(defaultOrder, function (i, value) {
@@ -441,7 +441,7 @@ function prepareDashboard() {
     $(function () {
       gridster = $(".gridster ul")
         .gridster({
-          widget_base_dimensions: [100, 120],
+          widget_base_dimensions: [1200, 200],
           widget_margins: [5, 5],
           helper: "clone",
           resize: {

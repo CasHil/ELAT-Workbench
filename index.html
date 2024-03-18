@@ -897,9 +897,80 @@
             <div id="cycleChart"></div>
           </div>
         </li>
+        <!-- <li id="cycleTileAggregate">
+            <header>|||</header>
+            <div class="container-fluid" id="cycleChartBox">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm float-right"
+                data-toggle="collapse"
+                data-target="#transitionInfo"
+              >
+                Hide
+              </button>
+              <div id="transitionInfo" class="collapse show">
+                <div style="border: 1px solid blue; padding: 2px">
+                  The
+                  <a
+                    href="http://www.educationaldatamining.org/EDM2016/proceedings/paper_63.pdf"
+                    target="_blank"
+                    >Learning Path</a
+                  >
+                  chart shows the average learner's sequential movement between
+                  course components during a given week. Each node (circle) is a
+                  <i>type</i> of course component, and each link (arrow) shows the
+                  <i>likelihood</i> that a student will transition from one event
+                  type to another. The paths are calculated as a
+                  <a
+                    href="https://en.wikipedia.org/wiki/Markov_chain"
+                    target="_blank"
+                    >Markov Chain</a
+                  >, so the probability that a student goes to a given component
+                  type depends only on the previous component.
+                </div>
+              </div>
+              <br />
+              <form>
+                <div class="dropdown">
+                  <button
+                    type="button"
+                    class="btn btn-sm dropdown-toggle"
+                    data-toggle="dropdown"
+                    style="float: right"
+                  >
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" id="png_cycleChart">Download PNG</a>
+                  </div>
+                </div>
+                <label for="linksCycleAggregate" style="float: right">
+                  - Level of Detail</label
+                >
+                <input
+                  type="range"
+                  min="0"
+                  max="300"
+                  step="10"
+                  id="linksCycleAggregate"
+                  value="300"
+                  style="float: right"
+                />
+                <label style="float: left" for="cycleType"
+                  >Student Status -
+                </label>
+                <select name="type" id="cycleType" style="float: left">
+                  <option value="downloadable">Passing Only</option>
+                  <option value="notpassing">Failing Only</option>
+                  <option value="general" selected>Passing and Failing</option>
+                  <option value="designed">Designed</option>
+                </select>
+              </form>
+              <div id="cycleChartAggregate"></div>
+            </div>
+          </li> -->
       </ul>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.1/toastr.min.js"></script>

@@ -1,3 +1,4 @@
 node_modules
 samples/edx_demographics/*
-!samples/edx_demographics/process_user_profiles_and_logs.py
+!samples/edx_demographics/*.py
+!samples/edx_demographics/*.js
