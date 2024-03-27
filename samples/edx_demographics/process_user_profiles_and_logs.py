@@ -82,21 +82,27 @@
 import gzip
 import json
 import os
+from dotenv import load_dotenv
 
-def find_course_runs(base_path, prefixes):
+load_dotenv()
+
+WORKING_DIRECTORY = os.getenv('WORKING_DIRECTORY')
+COURSES = ['EX101x', 'ST1x', 'UnixTx', 'FP101x']
+
+def find_course_runs() -> set[str]:
     course_runs = set()
-    for root, dirs, files in os.walk(base_path):
+    for root, dirs, files in os.walk(WORKING_DIRECTORY):
         if 'processed' in root.split(os.sep):
             continue  # Skip directories named "processed"
         for dir_name in dirs:
-            if any(dir_name.startswith(prefix) for prefix in prefixes) and dir_name != 'processed':
+            if any(dir_name.startswith(course) for course in COURSES) and dir_name != 'processed':
                 course_runs.add(dir_name)
     return course_runs
 
-def process_course_run(base_path, course_run, user_profiles):
+def process_course_run(course_run: str, user_profiles: str) -> None:
     user_ids = set()
-    course_run_path = os.path.join(base_path, course_run)
-    for root, dirs, files in os.walk(course_run_path):
+    course_run_path = os.path.join(WORKING_DIRECTORY, course_run)
+    for root, _, files in os.walk(course_run_path):
         if 'processed' in root.split(os.sep):
             continue
         for file in files:
@@ -127,14 +133,11 @@ def process_course_run(base_path, course_run, user_profiles):
         print(f"Created {file_name} with {len(filtered_profiles)} profiles")
 
 def main():
-    base_path = 'W:/staff-umbrella/gdicsmoocs/Working copy'
-    prefixes = ["EX101x", "ST1x", "UnixTx", "FP101x"]
-
     with open('user_profiles.json', 'r', encoding='utf-8') as json_file:
         user_profiles = json.load(json_file)
 
-    course_runs = find_course_runs(base_path, prefixes)
+    course_runs = find_course_runs()
     for course_run in course_runs:
-        process_course_run(base_path, course_run, user_profiles)
+        process_course_run(course_run, user_profiles)
 
 main()
