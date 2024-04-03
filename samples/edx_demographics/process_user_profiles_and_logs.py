@@ -67,7 +67,7 @@
 # #                     filtered_lines.append(line)
 # #             except json.JSONDecodeError:
 # #                 continue
-    
+
 # #     if filtered_lines:
 # #         processed_dir = os.path.join(os.path.dirname(log_file), 'processed')
 # #         os.makedirs(processed_dir, exist_ok=True)
@@ -89,6 +89,7 @@ load_dotenv()
 WORKING_DIRECTORY = os.getenv('WORKING_DIRECTORY')
 COURSES = ['EX101x', 'ST1x', 'UnixTx', 'FP101x']
 
+
 def find_course_runs() -> set[str]:
     course_runs = set()
     for root, dirs, files in os.walk(WORKING_DIRECTORY):
@@ -98,6 +99,7 @@ def find_course_runs() -> set[str]:
             if any(dir_name.startswith(course) for course in COURSES) and dir_name != 'processed':
                 course_runs.add(dir_name)
     return course_runs
+
 
 def process_course_run(course_run: str, user_profiles: str) -> None:
     user_ids = set()
@@ -113,7 +115,8 @@ def process_course_run(course_run: str, user_profiles: str) -> None:
                     for line in f:
                         try:
                             data = json.loads(line)
-                            user_id = data.get("context", {}).get("user_id", "")
+                            user_id = data.get(
+                                "context", {}).get("user_id", "")
                             if user_id:
                                 user_ids.add(user_id)
                         except json.JSONDecodeError:
@@ -132,6 +135,7 @@ def process_course_run(course_run: str, user_profiles: str) -> None:
         json.dump(filtered_profiles, outfile, ensure_ascii=False, indent=4)
         print(f"Created {file_name} with {len(filtered_profiles)} profiles")
 
+
 def main():
     with open('user_profiles.json', 'r', encoding='utf-8') as json_file:
         user_profiles = json.load(json_file)
@@ -139,5 +143,6 @@ def main():
     course_runs = find_course_runs()
     for course_run in course_runs:
         process_course_run(course_run, user_profiles)
+
 
 main()
