@@ -21,20 +21,20 @@ async function automateDownloadSequence(segmentNames) {
     cycleWeekInput.value = week;
     const event = new Event("change", { bubbles: true, cancelable: true });
     cycleWeekInput.dispatchEvent(event);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
   const downloadSVG = async () => {
     if (!hasSVG()) {
       console.log(
-        "No SVG with the specified structure found, stopping download for this segment.",
+        "No SVG with the specified structure found, stopping download for this segment."
       );
       return false;
     }
     document
       .querySelector('.btn.btn-sm.dropdown-toggle[data-toggle="dropdown"]')
       .click();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     document.querySelector("a#png_cycleChart").click();
     return true;
   };
