@@ -87,7 +87,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 WORKING_DIRECTORY = os.getenv('WORKING_DIRECTORY')
-COURSES = ['EX101x', 'ST1x', 'UnixTx', 'FP101x']
+COURSES = json.loads(os.getenv('COURSES'))
 
 
 def find_course_runs() -> set[str]:
